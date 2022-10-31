@@ -22,6 +22,7 @@ public class Main {
         HttpClient httpClient = HttpClientBuilder.create().build();
         HttpGet request = new HttpGet(NPM_API_URL + packageName);
         request.addHeader("accept", "application/json");
+
         HttpResponse response = httpClient.execute(request);
 
         String json = IOUtils.toString(response.getEntity().getContent(), StandardCharsets.UTF_8);
@@ -44,8 +45,19 @@ public class Main {
         return dependenciesMap;
     }
 
-    public static void printGraph(TreeMap<String, String> dependencies) {
+    public static void printGraph(TreeMap<String, String> dependencies, String packageName, String packageVersion, int level) throws IOException, ParseException {
+        StringBuilder tabs = new StringBuilder();
+        for (int i = 0; i < level; i++) {
+            tabs.append("   ");
+        }
+        for (Map.Entry<String, String> dep: dependencies.entrySet()) {
+            System.out.println(
+                    tabs + packageName + " " + packageVersion + " -> " + dep.getKey() + " " + dep.getValue().substring(1));
 
+            TreeMap<String, String> depends =
+                    getDependencies(getVersions(getJson(dep.getKey())).get(dep.getValue().substring(1)));
+            printGraph(depends, dep.getKey(), dep.getValue().substring(1), level + 1);
+        }
     }
 
     public static void main(String[] args) throws IOException, ParseException {
@@ -66,11 +78,10 @@ public class Main {
         System.out.println("Введите версию:");
         packageVersion = scanner.nextLine();
 
-        System.out.printf("Зависимости пакета %s версии %s:\n", packageName, packageVersion);
         TreeMap<String, String> dependencies = getDependencies(versionsMap.get(packageVersion));
 
-        for (Map.Entry<String, String> dep: dependencies.entrySet()) {
-            System.out.println(dep.getKey() + ": " + dep.getValue().substring(1));
-        }
+        System.out.println("digraph DEPENDENCIES {");
+        printGraph(dependencies, packageName, packageVersion, 1);
+        System.out.println("}");
     }
 }
