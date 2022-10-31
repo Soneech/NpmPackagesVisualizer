@@ -15,7 +15,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
-public class Main {
+public class NpmPackagesVisualizer {
     private static final String NPM_API_URL = "https://registry.npmjs.org/";
 
     public static JSONObject getJson(String packageName) throws IOException, ParseException {
