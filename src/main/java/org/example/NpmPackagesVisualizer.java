@@ -39,9 +39,13 @@ public class NpmPackagesVisualizer {
     }
 
     public static TreeMap<String, String> getDependencies(JSONObject versionInfo) {
-        JSONObject dependencies = (JSONObject) versionInfo.get("dependencies");
-        TreeMap<String, String> dependenciesMap = new TreeMap<>(dependencies);
-
+        TreeMap<String, String> dependenciesMap;
+        try {
+            JSONObject dependencies = (JSONObject) versionInfo.get("dependencies");
+            dependenciesMap = new TreeMap<>(dependencies);
+        } catch (NullPointerException exception) {
+            dependenciesMap = null;
+        }
         return dependenciesMap;
     }
 
@@ -50,13 +54,15 @@ public class NpmPackagesVisualizer {
         for (int i = 0; i < level; i++) {
             tabs.append("   ");
         }
-        for (Map.Entry<String, String> dep: dependencies.entrySet()) {
-            System.out.println(
-                    tabs + packageName + " " + packageVersion + " -> " + dep.getKey() + " " + dep.getValue().substring(1));
+        if (dependencies != null) {
+            for (Map.Entry<String, String> dep: dependencies.entrySet()) {
+                System.out.println(
+                        tabs + packageName + " " + packageVersion + " -> " + dep.getKey() + " " + dep.getValue().substring(1));
 
-            TreeMap<String, String> depends =
-                    getDependencies(getVersions(getJson(dep.getKey())).get(dep.getValue().substring(1)));
-            printGraph(depends, dep.getKey(), dep.getValue().substring(1), level + 1);
+                TreeMap<String, String> depends =
+                        getDependencies(getVersions(getJson(dep.getKey())).get(dep.getValue().substring(1)));
+                printGraph(depends, dep.getKey(), dep.getValue().substring(1), level + 1);
+            }
         }
     }
 
