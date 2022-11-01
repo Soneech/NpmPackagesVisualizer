@@ -57,11 +57,15 @@ public class NpmPackagesVisualizer {
         if (dependencies != null) {
             for (Map.Entry<String, String> dep: dependencies.entrySet()) {
                 System.out.println(
-                        tabs + packageName + " " + packageVersion + " -> " + dep.getKey() + " " + dep.getValue().substring(1));
+                        tabs + packageName + " " + packageVersion + " -> " + dep.getKey() + " " + dep.getValue());
 
-                TreeMap<String, String> depends =
-                        getDependencies(getVersions(getJson(dep.getKey())).get(dep.getValue().substring(1)));
-                printGraph(depends, dep.getKey(), dep.getValue().substring(1), level + 1);
+                JSONObject jsonObject = getJson(dep.getKey());
+                TreeMap<String, JSONObject> versionsMap = getVersions(jsonObject);
+                JSONObject versionInfo = versionsMap.get(dep.getValue().substring(1));
+
+                TreeMap<String, String> depend = getDependencies(versionInfo);
+
+                printGraph(depend, dep.getKey(), dep.getValue().substring(1), level + 1);
             }
         }
     }
